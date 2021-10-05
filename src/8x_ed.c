@@ -72,7 +72,7 @@ static void header_setup(struct tbl_8x_ed *tbl, unsigned max_header_size,
 static bool flush_header(struct tbl_8x_ed *tbl, struct tbl_row_flex const *row)
 {
     if (tbl->header_size == 0) return true;
-    int sz = (int)(tbl->header_size - 1);
+    int sz = (int)(tbl->header_size);
     int n = 0;
     if (tbl->header_align == TBL_LEFT)
         n = fprintf(tbl->fd, "%*.*s ", -sz, -sz, row->header);
