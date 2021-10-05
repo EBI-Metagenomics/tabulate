@@ -1,16 +1,17 @@
-#include "tbl/3x_ed.h"
+#include "tbl/8x_ed.h"
 #include "row_flex.h"
 #include "tbl.h"
 #include <assert.h>
 #include <string.h>
 
-static void header_setup(struct tbl_3x_ed *tbl, unsigned max_header_size,
-                         enum tbl_align align, char const *headers[3]);
-static bool flush_header(struct tbl_3x_ed *tbl, struct tbl_row_flex const *row);
+static void header_setup(struct tbl_8x_ed *tbl, unsigned max_header_size,
+                         enum tbl_align align, char const *headers[]);
+static bool flush_header(struct tbl_8x_ed *tbl, struct tbl_row_flex const *row);
 
-bool tbl_3x_ed_setup(struct tbl_3x_ed *tbl, unsigned width, unsigned cell_size,
-                     unsigned max_header_size, enum tbl_align align,
-                     char const *headers[3])
+bool tbl_8x_ed_setup(struct tbl_8x_ed *tbl, FILE *fd, unsigned width,
+                     unsigned cell_size, unsigned max_header_size,
+                     enum tbl_align align, unsigned nrows,
+                     char const *headers[nrows])
 {
     if (width < cell_size) return false;
 
@@ -19,23 +20,25 @@ bool tbl_3x_ed_setup(struct tbl_3x_ed *tbl, unsigned width, unsigned cell_size,
     if (max_header_size > data_size) return false;
     if (max_header_size + cell_size > data_size) return false;
 
+    tbl->fd = fd;
     tbl->width = width;
     tbl->cell_size = cell_size;
+    tbl->nrows = nrows;
 
     header_setup(tbl, max_header_size, align, headers);
 
-    for (unsigned i = 0; i < 3; ++i)
+    for (unsigned i = 0; i < tbl->nrows; ++i)
         row_flex_init(tbl->rows + i, headers[i]);
     return true;
 }
 
-bool tbl_3x_ed_add_col(struct tbl_3x_ed *tbl, enum tbl_align align,
-                       char const *rows[3])
+bool tbl_8x_ed_add_col(struct tbl_8x_ed *tbl, enum tbl_align align,
+                       char const *rows[])
 {
     if (tbl->cell_size > row_flex_remain(tbl->rows + 0, tbl->width))
-        tbl_3x_ed_flush(tbl);
+        tbl_8x_ed_flush(tbl);
 
-    for (unsigned i = 0; i < 3; ++i)
+    for (unsigned i = 0; i < tbl->nrows; ++i)
     {
         if (!row_flex_add(tbl->rows + i, tbl->cell_size, align, rows[i]))
             return false;
@@ -43,9 +46,9 @@ bool tbl_3x_ed_add_col(struct tbl_3x_ed *tbl, enum tbl_align align,
     return true;
 }
 
-bool tbl_3x_ed_flush(struct tbl_3x_ed *tbl)
+bool tbl_8x_ed_flush(struct tbl_8x_ed *tbl)
 {
-    for (unsigned i = 0; i < 3; ++i)
+    for (unsigned i = 0; i < tbl->nrows; ++i)
     {
         if (!flush_header(tbl, tbl->rows + i)) return false;
         if (EOF == fputs(tbl->rows[i].data, tbl->fd)) return false;
@@ -56,17 +59,17 @@ bool tbl_3x_ed_flush(struct tbl_3x_ed *tbl)
     return true;
 }
 
-static void header_setup(struct tbl_3x_ed *tbl, unsigned max_header_size,
-                         enum tbl_align align, char const *headers[3])
+static void header_setup(struct tbl_8x_ed *tbl, unsigned max_header_size,
+                         enum tbl_align align, char const *headers[])
 {
     tbl->header_size = 0;
-    for (unsigned i = 0; i < 3; ++i)
+    for (unsigned i = 0; i < tbl->nrows; ++i)
         tbl->header_size = MAX(tbl->header_size, (unsigned)strlen(headers[i]));
     tbl->header_size = MIN(tbl->header_size, max_header_size);
     tbl->header_align = align;
 }
 
-static bool flush_header(struct tbl_3x_ed *tbl, struct tbl_row_flex const *row)
+static bool flush_header(struct tbl_8x_ed *tbl, struct tbl_row_flex const *row)
 {
     if (tbl->header_size == 0) return true;
     int sz = (int)(tbl->header_size - 1);

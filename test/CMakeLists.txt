@@ -9,4 +9,4 @@ function(tbl_add_test name srcs)
   add_test(NAME ${name} COMMAND ${name})
 endfunction()
 
-tbl_add_test(tbl_3x_ed tbl_3x_ed.c)
+tbl_add_test(tbl_8x_ed tbl_8x_ed.c)

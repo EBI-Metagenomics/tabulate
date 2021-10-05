@@ -12,7 +12,7 @@ cbp_set_rpath()
 
 add_library(
   tbl
-  src/3x_ed.c
+  src/8x_ed.c
   src/row_flex.c)
 add_library(TBL::tbl ALIAS tbl)
 
