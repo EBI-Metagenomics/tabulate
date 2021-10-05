@@ -2,7 +2,6 @@
 #define ROW_FLEX_H
 
 #include "tbl/align.h"
-#include "tbl/rc.h"
 #include <stdbool.h>
 
 struct tbl_row_flex;
