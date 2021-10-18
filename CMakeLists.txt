@@ -37,7 +37,7 @@ target_compile_options(tbl PRIVATE ${WARNING_FLAGS})
 target_compile_options(tbl PRIVATE "-fverbose-asm")
 
 cbp_install(tbl MERGED)
-install(FILES ${EXPORT_FILE} ${VERSION_FILE} DESTINATION include/tbl)
+install(FILES ${EXPORT_FILE} DESTINATION include/tbl)
 
 enable_testing()
 add_subdirectory(test)
